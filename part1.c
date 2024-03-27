@@ -205,50 +205,175 @@ void write_branch(Instruction instruction) {
 /* For the writes, probably a good idea to take a look at utils.h */
 
 void write_auipc(Instruction instruction) {
-  /* YOUR CODE HERE */
+  unsigned int rd = get_rd(instruction);
+  int imm = get_imm_U(instruction);
+  printf("auipc\tx%d, %d\n", rd, imm);
 }
 
 
 void write_lui(Instruction instruction) {
-  /* YOUR CODE HERE */
+   unsigned int rd = get_rd(instruction);
+   unsigned int rs1 = get_rs1(instruction);
+   int imm = get_imm_I(instruction);
+   printf("lui\tx%d, %d\n", rd, imm);
 }
 
 
 void write_jalr(Instruction instruction) {
-  /* YOUR CODE HERE */
+   unsigned int rd = get_rd(instruction);
+   unsigned int rs1 = get_rs1(instruction);
+   int imm = get_imm_I(instruction);
+   printf("jalr\tx%d, x%d, %d\n", rd, rs1, imm);
 }
 
 
 void write_jal(Instruction instruction) {
-  /* YOUR CODE HERE */
+   unsigned int rd = get_rd(instruction);
+   int imm = get_imm_J(instruction);
+   printf("jal\tx%d, %d\n", rd, imm);
+   
 }
 
 
 void write_ecall(Instruction instruction) {
-  /* YOUR CODE HERE */
+   /*Me falta*/
 }
 
 
 void print_rtype(char *name, Instruction instruction) {
-  /* YOUR CODE HERE */
+    unsigned int funct3 = get_funct3(instruction);
+    unsigned int funct7 = get_funct7(instruction);
+    unsigned int rs1 = get_rs1(instruction);
+    unsigned int rs2 = get_rs2(instruction);
+    unsigned int rd = get_rd(instruction);
+
+    switch(funct3) {
+        case F3_ADD:
+            if (funct7 == F7_ADD) {
+                printf("%s\tx%d, x%d, x%d\n", name, rd, rs1, rs2);
+            } else if (funct7 == F7_SUB) {
+                printf("%s\tx%d, x%d, x%d\n", name, rd, rs1, rs2);
+            } else {
+                handle_invalid_instruction(instruction);
+            }
+            break;
+        case F3_SLL:
+            if (funct7 == F7_SLL) {
+                printf("%s\tx%d, x%d, x%d\n", name, rd, rs1, rs2);
+            } else {
+                handle_invalid_instruction(instruction);
+            }
+            break;
+        // Se pueden agregar casos para otras funciones R-Type
+        default:
+            handle_invalid_instruction(instruction);
+            break;
+    }
 }
 
 
 void print_itype_except_load(char *name, Instruction instruction, int imm) {
-  /* YOUR CODE HERE */
+    unsigned int opcode = get_opcode(instruction);
+    unsigned int funct3 = get_funct3(instruction);
+    unsigned int rd = get_rd(instruction);
+    unsigned int rs1 = get_rs1(instruction);
+
+    switch(opcode) {
+        case OP_IMM:
+            switch(funct3) {
+                case F3_ADDI:
+                    printf("%s\tx%d, x%d, %d\n", name, rd, rs1, imm);
+                    break;
+                // Agregar otros casos para instrucciones de tipo I
+                default:
+                    handle_invalid_instruction(instruction);
+                    break;
+            }
+            break;
+        // Agregar otros opcodes de tipo I si es necesario
+        default:
+            handle_invalid_instruction(instruction);
+            break;
+    }
 }
 
 
 void print_load(char *name, Instruction instruction) {
-  /* YOUR CODE HERE */
+    unsigned int opcode = get_opcode(instruction);
+    unsigned int funct3 = get_funct3(instruction);
+    unsigned int rd = get_rd(instruction);
+    unsigned int rs1 = get_rs1(instruction);
+    int imm = get_imm_I(instruction);
+
+    switch(opcode) {
+        case OP_LOAD:
+            switch(funct3) {
+                case F3_LB:
+                    printf("%s\tx%d, %d(x%d)\n", name, rd, imm, rs1);
+                    break;
+                // Agregar otros casos para instrucciones de carga
+                default:
+                    handle_invalid_instruction(instruction);
+                    break;
+            }
+            break;
+        // Agregar otros opcodes de carga si es necesario
+        default:
+            handle_invalid_instruction(instruction);
+            break;
+    }
 }
 
 
 void print_store(char *name, Instruction instruction) {
-  /* YOUR CODE HERE */
+    unsigned int opcode = get_opcode(instruction);
+    unsigned int funct3 = get_funct3(instruction);
+    unsigned int rs1 = get_rs1(instruction);
+    unsigned int rs2 = get_rs2(instruction);
+    int imm = get_imm_S(instruction);
+
+    switch(opcode) {
+        case OP_STORE:
+            switch(funct3) {
+                case F3_SB:
+                    printf("%s\tx%d, %d(x%d)\n", name, rs2, imm, rs1);
+                    break;
+                // Agregar otros casos para instrucciones de almacenamiento
+                default:
+                    handle_invalid_instruction(instruction);
+                    break;
+            }
+            break;
+        // Agregar otros opcodes de almacenamiento si es necesario
+        default:
+            handle_invalid_instruction(instruction);
+            break;
+    }
 }
 
 
 void print_branch(char *name, Instruction instruction) {
-  /* YOUR CODE HERE */
+    unsigned int opcode = get_opcode(instruction);
+    unsigned int funct3 = get_funct3(instruction);
+    unsigned int rs1 = get_rs1(instruction);
+    unsigned int rs2 = get_rs2(instruction);
+    int imm = get_imm_B(instruction);
+
+    switch(opcode) {
+        case OP_BRANCH:
+            switch(funct3) {
+                case F3_BEQ:
+                    printf("%s\tx%d, x%d, %d\n", name, rs1, rs2, imm);
+                    break;
+                // Agregar otros casos para instrucciones de salto condicional
+                default:
+                    handle_invalid_instruction(instruction);
+                    break;
+            }
+            break;
+        // Agregar otros opcodes de salto condicional si es necesario
+        default:
+            handle_invalid_instruction(instruction);
+            break;
+    }
 }
