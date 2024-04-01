@@ -6,30 +6,39 @@
 //sign extends a bitfield with given size
 /* You may find implementing this function helpful */
 int bitExtender(unsigned int field, unsigned int size) {
-  /* YOUR CODE HERE */
-  return 0;
+    int sign = field >> (size - 1);
+    return (field ^ ((1 << (size - 1)) - 1)) + sign;
 }
-
 
 /* Distances in BYTES */
 
 int get_branch_distance(Instruction instruction) {
-  /* YOUR CODE HERE */
-  return 0;
+int imm = (instruction.bits >> 6) & 0x1f;
+    int offset = (instruction.bits >> 11) & 0x1fff;
+    if (instruction.bits & (1 << 10)) {
+        return -(bitExtender(offset, 13) + (imm << 13));
+    }
+    return bitExtender(offset, 13) + (imm << 13);
 }
 
 
 int get_jump_distance(Instruction instruction) {
-  /* YOUR CODE HERE */
-  return 0;
+int imm = (instruction.bits >> 12) & 0xfff;
+    if (instruction.bits & (1 << 11)) {
+        return -(bitExtender(imm, 12) << 2);
+    }
+    return bitExtender(imm, 12) << 2;
 }
 
 /* Offset in BYTES */
 /* Used both in load and store */
 
 int get_memory_offset(Instruction instruction) {
-  /* YOUR CODE HERE */
-  return 0;
+int imm = (instruction.bits >> 3) & 0x1ff;
+    if (instruction.bits & (1 << 2)) {
+        return -(bitExtender(imm, 10) << 2);
+    }
+    return bitExtender(imm, 10) << 2;
 }
 
 
