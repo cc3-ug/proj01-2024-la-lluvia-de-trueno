@@ -206,49 +206,79 @@ void write_branch(Instruction instruction) {
 
 void write_auipc(Instruction instruction) {
   /* YOUR CODE HERE */
+   unsigned int rd = get_rd(instruction);
+   int imm = get_imm_U(instruction);
+   printf("auipc\tx%d, %d\n", rd, imm);
 }
 
 
 void write_lui(Instruction instruction) {
   /* YOUR CODE HERE */
+    unsigned int rd = get_rd(instruction);
+    int imm = get_imm_U(instruction);
+    printf("lui\tx%d, %d\n", rd, imm);
 }
 
 
 void write_jalr(Instruction instruction) {
   /* YOUR CODE HERE */
+    unsigned int rd = get_rd(instruction);
+    unsigned int rs1 = get_rs1(instruction);
+    int imm = get_imm_I(instruction);
+    printf("jalr\tx%d, x%d, %d\n", rd, rs1, imm);
 }
 
 
 void write_jal(Instruction instruction) {
   /* YOUR CODE HERE */
+    unsigned int rd = get_rd(instruction);
+    int imm = get_imm_J(instruction);
+    printf("jal\tx%d, %d\n", rd, imm);
 }
 
 
 void write_ecall(Instruction instruction) {
   /* YOUR CODE HERE */
+   printf("ecall\n")
 }
 
 
 void print_rtype(char *name, Instruction instruction) {
   /* YOUR CODE HERE */
+    unsigned int rd = get_rd(instruction);
+    unsigned int rs1 = get_rs1(instruction);
+    unsigned int rs2 = get_rs2(instruction);
+    printf("%s\tx%d, x%d, x%d\n", name, rd, rs1, rs2);
 }
 
 
-void print_itype_except_load(char *name, Instruction instruction, int imm) {
-  /* YOUR CODE HERE */
+void print_itype_except_load(char *name, Instruction instruction, int imm) { 
+ /* YOUR CODE HERE */
+    unsigned int rd = get_rd(instruction);
+    unsigned int rs1 = get_rs1(instruction);
+    printf("%s\tx%d, x%d, %d\n", name, rd, rs1, imm);
 }
-
 
 void print_load(char *name, Instruction instruction) {
-  /* YOUR CODE HERE */
+ /* YOUR CODE HERE */
+    unsigned int rd = get_rd(instruction);
+    int imm = get_imm_I(instruction);
+    unsigned int rs1 = get_rs1(instruction);
+    printf("%s\tx%d, %d(x%d)\n", name, rd, imm, rs1);
 }
-
 
 void print_store(char *name, Instruction instruction) {
-  /* YOUR CODE HERE */
+ /* YOUR CODE HERE */
+    unsigned int rs1 = get_rs1(instruction);
+    unsigned int rs2 = get_rs2(instruction);
+    int imm = get_imm_S(instruction);
+    printf("%s\tx%d, %d(x%d)\n", name, rs2, imm, rs1);
 }
 
-
 void print_branch(char *name, Instruction instruction) {
-  /* YOUR CODE HERE */
+ /* YOUR CODE HERE */
+    unsigned int rs1 = get_rs1(instruction);
+    unsigned int rs2 = get_rs2(instruction);
+    int imm = get_imm_B(instruction);
+    printf("%s\tx%d, x%d, %d\n", name, rs1, rs2, imm);
 }
