@@ -23,36 +23,35 @@ void write_ecall(Instruction);
 
 
 void decode_instruction(Instruction instruction) {
-    unsigned int opcode = get_opcode(instruction);
-    switch(opcode) {
-        case OP_RTYPE:
+    switch(instruction.opcode) {
+        case 0b0110011: // R-type
             write_rtype(instruction);
             break;
-        case OP_ITYPE:
+        case 0b0010011: // I-type except load
             write_itype_except_load(instruction);
             break;
-        case OP_LOAD:
+        case 0b0000011: // Load
             write_load(instruction);
             break;
-        case OP_STORE:
+        case 0b0100011: // Store
             write_store(instruction);
             break;
-        case OP_BRANCH:
+        case 0b1100011: // Branch
             write_branch(instruction);
             break;
-        case OP_AUIPC:
+        case 0b0110111: // AUIPC
             write_auipc(instruction);
             break;
-        case OP_LUI:
+        case 0b0110110: // LUI
             write_lui(instruction);
             break;
-        case OP_JALR:
+        case 0b1100111: // JALR
             write_jalr(instruction);
             break;
-        case OP_JAL:
+        case 0b1101111: // JAL
             write_jal(instruction);
             break;
-        case OP_ECALL:
+        case 0b1110011: // ECALL
             write_ecall(instruction);
             break;
         default:
@@ -63,11 +62,6 @@ void decode_instruction(Instruction instruction) {
 
 
 void write_rtype(Instruction instruction) {
-    unsigned int funct3 = get_funct3(instruction);
-    unsigned int funct7 = get_funct7(instruction);
-    unsigned int rs1 = get_rs1(instruction);
-    unsigned int rs2 = get_rs2(instruction);
-    unsigned int rd = get_rd(instruction);
     
     switch(instruction.rtype.funct3) {
         case 0x0:
@@ -86,18 +80,13 @@ void write_rtype(Instruction instruction) {
 
 
 void write_itype_except_load(Instruction instruction) {
-    unsigned int opcode = get_opcode(instruction);
-    unsigned int funct3 = get_funct3(instruction);
-    unsigned int rd = get_rd(instruction);
-    unsigned int rs1 = get_rs1(instruction);
-    int imm = get_imm_I(instruction);
     
     switch(instruction.itype.funct3) {
         case 0x0:
-            print_itype("addi", instruction);
+            print_itype_except_load("addi", instruction, instruction.itype.imm);
             break;
         case 0x1:
-            print_itype("slli", instruction);
+            print_itype_except_load("slli", instruction, instruction.itype.imm);
             break;
         // Otros casos para funct3 según sea necesario
     }
@@ -105,11 +94,6 @@ void write_itype_except_load(Instruction instruction) {
 
 
 void write_load(Instruction instruction) {
-    unsigned int opcode = get_opcode(instruction);
-    unsigned int funct3 = get_funct3(instruction);
-    unsigned int rd = get_rd(instruction);
-    unsigned int rs1 = get_rs1(instruction);
-    int imm = get_imm_I(instruction);
     
     switch(instruction.itype.funct3) {
         case 0x0:
@@ -124,11 +108,6 @@ void write_load(Instruction instruction) {
 
 
 void write_store(Instruction instruction) {
-    unsigned int opcode = get_opcode(instruction);
-    unsigned int funct3 = get_funct3(instruction);
-    unsigned int rs1 = get_rs1(instruction);
-    unsigned int rs2 = get_rs2(instruction);
-    int imm = get_imm_S(instruction);
     
     switch(instruction.stype.funct3) {
         case 0x0:
@@ -143,11 +122,6 @@ void write_store(Instruction instruction) {
 
 
 void write_branch(Instruction instruction) {
-    unsigned int opcode = get_opcode(instruction);
-    unsigned int funct3 = get_funct3(instruction);
-    unsigned int rs1 = get_rs1(instruction);
-    unsigned int rs2 = get_rs2(instruction);
-    int imm = get_imm_B(instruction);
     
     switch(instruction.btype.funct3) {
         case 0x0:
@@ -165,7 +139,7 @@ void write_branch(Instruction instruction) {
 
 void write_auipc(Instruction instruction) {
   /* YOUR CODE HERE */
-   printf(AUIPC_FORMAT, instruction.utype.rd. instruction.utype.imm);
+   printf(AUIPC_FORMAT, instruction.utype.rd, instruction.utype.imm);
 }
 
 
@@ -177,13 +151,13 @@ void write_lui(Instruction instruction) {
 
 void write_jalr(Instruction instruction) {
   /* YOUR CODE HERE */
-    printf(JALR_FORMAT, instruction.itype.rd, instruction.itype.rs1, instruction.itype.imm);
+    printf(JALR_FORMAT, instruction.itype.rd, instruction.itype.rs1, bitExtender(instruction.itype.imm, 12));
 }
 
 
 void write_jal(Instruction instruction) {
   /* YOUR CODE HERE */
-    printf(JAL_FORMAT, instruction.ujtype.rd, instruction.ujtype.imm);
+    printf(JAL_FORMAT, instruction.jtype.rd, get_jump_distance(instruction));
 }
 
 
@@ -195,26 +169,26 @@ void write_ecall(Instruction instruction) {
 
 void print_rtype(char *name, Instruction instruction) {
   /* YOUR CODE HERE */
-    printf(RTYPE_FORMAT, name, rd, rs1, rs2);
+    printf(RTYPE_FORMAT, name, instruction.rtype.rd, instruction.rtype.rs1, instruction.rtype.rs2);
 }
 
 
 void print_itype_except_load(char *name, Instruction instruction, int imm) { 
  /* YOUR CODE HERE */
-    printf(ITYPE_EXCEPT_LOAD_FORMAT, name, rd, rs1, imm);
+    printf(ITYPE_EXCEPT_LOAD_FORMAT, name, instruction.itype.rd, instruction.itype.rs1, bitExtender(instructon.itype.imm, 12));
 }
 
 void print_load(char *name, Instruction instruction) {
  /* YOUR CODE HERE */
-    printf(LOAD_FORMAT, name, rd, imm, rs1);
+    printf(LOAD_FORMAT, name, instruction.itype.rd, bitExtender(instructon.itype.imm, 12), instruction.itype.rs1);
 }
 
 void print_store(char *name, Instruction instruction) {
  /* YOUR CODE HERE */
-    printf(STORE_FORMAT, name, rs2, imm, rs1);
+    printf(STORE_FORMAT, name, instruction.stype.rs2, get_jump_distance(instruction), instruction.stype.rs1);
 }
 
 void print_branch(char *name, Instruction instruction) {
  /* YOUR CODE HERE */
-    printf(BRANCH_FORMAT, name, rs1, rs2, imm);
+    printf(BRANCH_FORMAT, name, instruction.btype.rs1, instruction.btype.rs2, get_jump_distance(instruction));
 }
