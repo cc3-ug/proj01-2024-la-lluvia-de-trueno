@@ -93,7 +93,7 @@ void write_itype_except_load(Instruction instruction) {
 }
 
 
-void write_load(Instruction instruction) {
+void write_load(instruction instruction) {
     
     switch(instruction.itype.funct3) {
         case 0x0:
@@ -137,58 +137,58 @@ void write_branch(Instruction instruction) {
 
 /* For the writes, probably a good idea to take a look at utils.h */
 
-void write_auipc(Instruction instruction) {
+void write_auipc(instruction instruction) {
   /* YOUR CODE HERE */
    printf(AUIPC_FORMAT, instruction.utype.rd, instruction.utype.imm);
 }
 
 
-void write_lui(Instruction instruction) {
+void write_lui(instruction instruction) {
   /* YOUR CODE HERE */
     printf(LUI_FORMAT, instruction.utype.rd, instruction.utype.imm);
 }
 
 
-void write_jalr(Instruction instruction) {
+void write_jalr(instruction instruction) {
   /* YOUR CODE HERE */
     printf(JALR_FORMAT, instruction.itype.rd, instruction.itype.rs1, bitExtender(instruction.itype.imm, 12));
 }
 
 
-void write_jal(Instruction instruction) {
+void write_jal(instruction instruction) {
   /* YOUR CODE HERE */
     printf(JAL_FORMAT, instruction.jtype.rd, get_jump_distance(instruction));
 }
 
 
-void write_ecall(Instruction instruction) {
+void write_ecall(instruction instruction) {
   /* YOUR CODE HERE */
    printf(ECALL_FORMAT);
 }
 
 
-void print_rtype(char *name, Instruction instruction) {
+void print_rtype(char *name, instruction instruction) {
   /* YOUR CODE HERE */
     printf(RTYPE_FORMAT, name, instruction.rtype.rd, instruction.rtype.rs1, instruction.rtype.rs2);
 }
 
 
-void print_itype_except_load(char *name, Instruction instruction, int imm) { 
+void print_itype_except_load(char *name, instruction instruction, int imm) { 
  /* YOUR CODE HERE */
-    printf(ITYPE_EXCEPT_LOAD_FORMAT, name, instruction.itype.rd, instruction.itype.rs1, bitExtender(instructon.itype.imm, 12));
+    printf(ITYPE_FORMAT, name, instruction.itype.rd, instruction.itype.rs1, bitExtender(instructon.itype.imm, 12));
 }
 
-void print_load(char *name, Instruction instruction) {
+void print_load(char *name, instruction instruction) {
  /* YOUR CODE HERE */
-    printf(LOAD_FORMAT, name, instruction.itype.rd, bitExtender(instructon.itype.imm, 12), instruction.itype.rs1);
+    printf(JAL_FORMAT, name, instruction.itype.rd, bitExtender(instructon.itype.imm, 12), instruction.itype.rs1);
 }
 
-void print_store(char *name, Instruction instruction) {
+void print_store(char *name, instruction instruction) {
  /* YOUR CODE HERE */
-    printf(STORE_FORMAT, name, instruction.stype.rs2, get_jump_distance(instruction), instruction.stype.rs1);
+    printf(MEM_FORMAT, name, instruction.stype.rs2, get_jump_distance(instruction), instruction.stype.rs1);
 }
 
-void print_branch(char *name, Instruction instruction) {
+void print_branch(char *name, instruction instruction) {
  /* YOUR CODE HERE */
     printf(BRANCH_FORMAT, name, instruction.btype.rs1, instruction.btype.rs2, get_jump_distance(instruction));
 }
