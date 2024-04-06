@@ -20,34 +20,34 @@ void execute_lui(Instruction, Processor *);
 
 void execute_instruction(Instruction instruction, Processor *processor, Byte *memory) {
     switch (instruction.opcode) {
-        case LUI:
+        case 0b0110110:  // LUI
             execute_lui(instruction, processor);
             break;
-        case AUIPC:
+        case 0b0110111: // AUIPC
             execute_auipc(instruction, processor);
             break;
-        case JAL:
+        case 0b1101111: // JAL
             execute_jal(instruction, processor);
             break;
-        case JALR:
+        case 0b1100111: // JALR
             execute_jalr(instruction, processor);
             break;
-        case BRANCH:
+        case 0b1100011: // Branch
             execute_branch(instruction, processor);
             break;
-        case LOAD:
+        case 0b0000011: // Load
             execute_load(instruction, processor, memory);
             break;
-        case STORE:
+        case 0b0100011: // Store
             execute_store(instruction, processor, memory);
             break;
-        case OP_IMM:
+        case 0b0010011: // I-type except load
             execute_itype_except_load(instruction, processor);
             break;
-        case ECALL:
+        case 0b1110011: // ECALL
             execute_ecall(processor, memory);
             break;
-        case OP:
+        case 0b0110011: // R-type
             execute_rtype(instruction, processor);
             break;
         default:
