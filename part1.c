@@ -150,14 +150,9 @@ void write_itype_except_load(Instruction instruction) {
             print_itype_except_load("andi", instruction, instruction.itype.imm);
             break;  
         case 0x5:
-	     switch(instruction.rtype.funct7) {
-	          case 0x0:
-	          print_rtype("srli ", instruction);
-	          break;
-	          case 0x5:
-	          print_rtype("srai ", instruction);
-	          break;
-	   }  
+	     if (instruction.itype.imm >> 5 == 0b0100000){        print_itype_except_load("srai",instruction,instruction.itype.imm & 31); 
+	     break;      }
+	      print_itype_except_load("srli",instruction,instruction.itype.imm & 31);
     }
 }
 
@@ -257,10 +252,10 @@ void print_load(char *name, Instruction instruction) {
 
 void print_store(char *name, Instruction instruction) {
  /* YOUR CODE HERE */
-    printf(MEM_FORMAT, name, instruction.stype.rs2, get_jump_distance(instruction), instruction.stype.rs1);
+    printf(MEM_FORMAT, name, instruction.stype.rs2, get_memory_offset(instruction), instruction.stype.rs1);
 }
 
 void print_branch(char *name, Instruction instruction) {
  /* YOUR CODE HERE */
-    printf(BRANCH_FORMAT, name, instruction.btype.rs1, instruction.btype.rs2, get_jump_distance(instruction));
+    printf(BRANCH_FORMAT, name, instruction.btype.rs1, instruction.btype.rs2, get_branch_distance(instruction));
 }
