@@ -65,7 +65,7 @@ void write_rtype(Instruction instruction) {
     
     switch(instruction.rtype.funct3) {
         case 0x0:
-	       switch(instruction.rtype.funct3) {
+	       switch(instruction.rtype.funct7) {
 	          case 0x0:
 	            print_rtype("add", instruction);
 	            break;
@@ -75,10 +75,58 @@ void write_rtype(Instruction instruction) {
 	            case 0x20:
 	            print_rtype("sub", instruction);
 	            break;
-    }
- }
+           }
+       case 0x1:
+	       switch(instruction.rtype.funct7) {
+	       case 0x0:
+	            print_rtype("sll", instruction);
+	            break;
+	            case 0x1:
+	            print_rtype("mulh", instruction);
+	            break;
+	   }         
+	case 0x2:
+	       switch(instruction.rtype.funct7) {
+	            case 0x0:
+	            print_rtype("slt", instruction);
+	            break;
+	   }
+	case 0x4:
+	       switch(instruction.rtype.funct7) {
+	            case 0x0:
+	            print_rtype("xor", instruction);
+	            break;
+	            case 0x4:
+	            print_rtype("div", instruction);
+	            break;
+	    }        
+	case 0x5:
+	       switch(instruction.rtype.funct7) {
+	            case 0x0:
+	            print_rtype("srl", instruction);
+	            break;
+	            case 0x5:
+	            print_rtype("sra", instruction);
+	            break;
+	   }     
+	case 0x6:
+	       switch(instruction.rtype.funct7) {      
+	            case 0x0:
+	            print_rtype("or", instruction);
+	            break;
+	            case 0x6:
+	            print_rtype("rem", instruction);
+	            break;
+	   }         
+	case 0x7:
+	       switch(instruction.rtype.funct7) {       
+	            case 0x7:
+	            print_rtype("and", instruction);
+	            break;
+	    }
+  
+   }
 }
-
 
 void write_itype_except_load(Instruction instruction) {
     
@@ -89,7 +137,27 @@ void write_itype_except_load(Instruction instruction) {
         case 0x1:
             print_itype_except_load("slli", instruction, instruction.itype.imm);
             break;
-        // Otros casos para funct3 según sea necesario
+        case 0x2:
+            print_itype_except_load("slti", instruction, instruction.itype.imm);
+            break;
+        case 0x4:
+            print_itype_except_load("xori", instruction, instruction.itype.imm);
+            break;          
+        case 0x6:
+            print_itype_except_load("ori", instruction, instruction.itype.imm);
+            break;  
+        case 0x7:
+            print_itype_except_load("andi", instruction, instruction.itype.imm);
+            break;  
+        case 0x5:
+	     switch(instruction.rtype.funct7) {
+	          case 0x0:
+	          print_rtype("srli ", instruction);
+	          break;
+	          case 0x5:
+	          print_rtype("srai ", instruction);
+	          break;
+	   }  
     }
 }
 
@@ -103,7 +171,9 @@ void write_load(Instruction instruction) {
         case 0x1:
             print_load("lh", instruction);
             break;
-        // Otros casos para funct3 según sea necesario
+        case 0x2:
+            print_load("lw", instruction);
+            break;
     }
 }
 
@@ -117,7 +187,9 @@ void write_store(Instruction instruction) {
         case 0x1:
             print_store("sh", instruction);
             break;
-        // Otros casos para funct3 según sea necesario
+        case 0x2:
+            print_store("sw ", instruction);
+            break;
     }
 }
 
@@ -131,7 +203,6 @@ void write_branch(Instruction instruction) {
         case 0x1:
             print_branch("bne", instruction);
             break;
-        // Otros casos para funct3 según sea necesario
     }
 }
 
