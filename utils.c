@@ -6,12 +6,10 @@
 //sign extends a bitfield with given size
 /* You may find implementing this function helpful */
 int bitExtender(unsigned int field, unsigned int size) {
-    if (size >= 32) { //si es mayor o igual no se necesita extender 
-        return field;
-    }
-    int sign = (field >> (31 - size)) & 1; // se mueve hacia la derecha
-    int extend = (field << size) | (sign << (32 - size)); // lo mueve hacia la izquierda
-    return extend;//da el dato extendido
+	int extend = field;
+	extend = ((extend << (32 - size)) >> (32 - size));
+	return extend;
+	
 }
 
 /* Distances in BYTES */

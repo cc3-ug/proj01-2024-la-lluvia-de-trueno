@@ -69,61 +69,89 @@ void write_rtype(Instruction instruction) {
 	          case 0x0:
 	            print_rtype("add", instruction);
 	            break;
-	            case 0x01:
+	          case 0x01:
 	            print_rtype("mul", instruction);
 	            break;
-	            case 0x20:
+	          case 0x20:
 	            print_rtype("sub", instruction);
 	            break;
+              default:            
+                handle_invalid_instruction(instruction);
+                break;
            }
+           break; 
        case 0x1:
 	       switch(instruction.rtype.funct7) {
-	       case 0x0:
+	           case 0x0:
 	            print_rtype("sll", instruction);
 	            break;
-	            case 0x1:
+	           case 0x1:
 	            print_rtype("mulh", instruction);
 	            break;
-	   }         
+              default:            
+                handle_invalid_instruction(instruction);
+                break;
+	   }
+       break;        
 	case 0x2:
 	       switch(instruction.rtype.funct7) {
-	            case 0x0:
+	           case 0x0:
 	            print_rtype("slt", instruction);
 	            break;
+              default:            
+                handle_invalid_instruction(instruction);
+                break;
 	   }
+       break;       
 	case 0x4:
 	       switch(instruction.rtype.funct7) {
-	            case 0x0:
+	           case 0x0:
 	            print_rtype("xor", instruction);
 	            break;
-	            case 0x4:
+	           case 0x1:
 	            print_rtype("div", instruction);
 	            break;
+              default:            
+                handle_invalid_instruction(instruction);
+                break;
 	    }        
+       break;        
 	case 0x5:
 	       switch(instruction.rtype.funct7) {
-	            case 0x0:
+	           case 0x0:
 	            print_rtype("srl", instruction);
 	            break;
-	            case 0x5:
+	           case 0x1:
 	            print_rtype("sra", instruction);
 	            break;
+              default:            
+                handle_invalid_instruction(instruction);
+                break;
 	   }     
+       break;       
 	case 0x6:
 	       switch(instruction.rtype.funct7) {      
-	            case 0x0:
+	           case 0x0:
 	            print_rtype("or", instruction);
 	            break;
-	            case 0x6:
+	           case 0x1:
 	            print_rtype("rem", instruction);
 	            break;
+              default:            
+                handle_invalid_instruction(instruction);
+                break;
 	   }         
+       break;        
 	case 0x7:
 	       switch(instruction.rtype.funct7) {       
-	            case 0x7:
+	           case 0x7:
 	            print_rtype("and", instruction);
 	            break;
+              default:            
+                handle_invalid_instruction(instruction);
+                break;
 	    }
+       break;       
   
    }
 }
@@ -153,6 +181,7 @@ void write_itype_except_load(Instruction instruction) {
 	     if (instruction.itype.imm >> 5 == 0b0100000){        print_itype_except_load("srai",instruction,instruction.itype.imm & 31); 
 	     break;      }
 	      print_itype_except_load("srli",instruction,instruction.itype.imm & 31);
+	      break;  
     }
 }
 
@@ -242,7 +271,7 @@ void print_rtype(char *name, Instruction instruction) {
 
 void print_itype_except_load(char *name, Instruction instruction, int imm) { 
  /* YOUR CODE HERE */
-    printf(ITYPE_FORMAT, name, instruction.itype.rd, instruction.itype.rs1, bitExtender(instruction.itype.imm, 12));
+    printf(ITYPE_FORMAT, name, instruction.itype.rd, instruction.itype.rs1, bitExtender(imm, 12));
 }
 
 void print_load(char *name, Instruction instruction) {
