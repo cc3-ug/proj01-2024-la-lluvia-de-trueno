@@ -20,11 +20,13 @@ void execute_lui(Instruction, Processor *);
 
 void execute_instruction(Instruction instruction, Processor *processor, Byte *memory) {
     switch (instruction.opcode) {
-        case 0b0110110:  // LUI
+        case 0b0110111:  // LUI
+            processor->PC += 4;
             execute_lui(instruction, processor);
             break;
-        case 0b0110111: // AUIPC
+        case 0b0010111: // AUIPC
             execute_auipc(instruction, processor);
+            processor->PC += 4;
             break;
         case 0b1101111: // JAL
             execute_jal(instruction, processor);
@@ -40,14 +42,17 @@ void execute_instruction(Instruction instruction, Processor *processor, Byte *me
             break;
         case 0b0100011: // Store
             execute_store(instruction, processor, memory);
+            processor->PC += 4;
             break;
         case 0b0010011: // I-type except load
             execute_itype_except_load(instruction, processor);
+            processor->PC += 4;
             break;
         case 0b1110011: // ECALL
             execute_ecall(processor, memory);
             break;
         case 0b0110011: // R-type
+            processor->PC += 4;
             execute_rtype(instruction, processor);
             break;
         default:
@@ -58,119 +63,153 @@ void execute_instruction(Instruction instruction, Processor *processor, Byte *me
 }
 
 void execute_rtype(Instruction instruction, Processor *processor) {
+    sDouble mul = 0;
+    sDouble mulh = 0;
     switch (instruction.rtype.funct3) {
         case 0x0: // R-type ADD, SUB
             switch (instruction.rtype.funct7) {
                 case 0x0:
-                    processor->R[instruction.rtype.rd] = (sWord)processor->R[instruction.rtype.rs1] + (sWord)processor->R[instruction.rtype.rs2];
+                    processor->R[instruction.rtype.rd] = ((sWord)processor->R[instruction.rtype.rs1]) + ((sWord)processor->R[instruction.rtype.rs2]);
                     break;
                 case 0x20:
-                    processor->R[instruction.rtype.rd] = (sWord)processor->R[instruction.rtype.rs1] - (sWord)processor->R[instruction.rtype.rs2];
+                    processor->R[instruction.rtype.rd] = ((sWord)processor->R[instruction.rtype.rs1]) - ((sWord)processor->R[instruction.rtype.rs2]);
                     break;
                 case 0x01:
-	            processor->R[instruction.rtype.rd] = (sWord)processor->R[instruction.rtype.rs1] * (sWord)processor->R[instruction.rtype.rs2];
-	            break;
+	                mul = ((sDouble)processor->R[instruction.rtype.rs1] * (sDouble)processor->R[instruction.rtype.rs2]);
+                    processor->R[instruction.rtype.rd] = (int)((mul << 31)>>31); 
+	                break;
                 default:
                     handle_invalid_instruction(instruction);
                     break;
             }
             break;
+
         case 0x1:
 	       switch(instruction.rtype.funct7) {
-	       case 0x0: //sll
-	            processor->R[instruction.rtype.rd] = (sWord)processor->R[instruction.rtype.rs1] << (sWord)processor->R[instruction.rtype.rs2];
-	            break;
+	            case 0x0: //sll
+	                processor->R[instruction.rtype.rd] = ((sWord)processor->R[instruction.rtype.rs1]) << ((sWord)processor->R[instruction.rtype.rs2]);
+	                break;
 	            case 0x1: //mulh
-	            processor->R[instruction.rtype.rd] = (sWord)processor->R[instruction.rtype.rs1] * (sWord)processor->R[instruction.rtype.rs2];
-	            break;
-	   } 
-	 case 0x2:
+	                mulh = ((sDouble)processor->R[instruction.rtype.rs1] * (sDouble)processor->R[instruction.rtype.rs2])>>32;
+                    processor->R[instruction.rtype.rd] = mulh; 
+	                break;
+	        }
+            break;
+
+	    case 0x2:
 	       switch(instruction.rtype.funct7) {
 	            case 0x0: //slt
-	            processor->R[instruction.rtype.rd] = (sWord)processor->R[instruction.rtype.rs1] < (sWord)processor->R[instruction.rtype.rs2];
+	            processor->R[instruction.rtype.rd] = (sWord)processor->R[instruction.rtype.rs1] < (sWord)processor->R[instruction.rtype.rs2] ? 1 : 0;
 	            break;
-	   }
-	case 0x4:
+	        }
+            break;
+
+	 case 0x4:
 	       switch(instruction.rtype.funct7) {
 	            case 0x0: //xor
-	            processor->R[instruction.rtype.rd] = (sWord)processor->R[instruction.rtype.rs1] ^ (sWord)processor->R[instruction.rtype.rs2];
-	            break;
-	            case 0x4: //div
-	            processor->R[instruction.rtype.rd] = (sWord)processor->R[instruction.rtype.rs1] / (sWord)processor->R[instruction.rtype.rs2];
-	            break;
-	    }        
+	                processor->R[instruction.rtype.rd] = (sWord)processor->R[instruction.rtype.rs1] ^ (sWord)processor->R[instruction.rtype.rs2];
+	                break;
+	            case 0x1: //div
+                    if((sWord)(processor->R[instruction.rtype.rs2] == 0)){
+                        processor->R[instruction.rtype.rd] = -1;
+                    }
+                    else if ((sWord)processor->R[instruction.rtype.rs1] == 0x80000000 && (sWord)processor->R[instruction.rtype.rs2] == 0xffffffff){
+                        processor->R[instruction.rtype.rd] = (sWord)processor->R[instruction.rtype.rs1];
+                    }
+                    else{
+                        processor->R[instruction.rtype.rd] = ((sWord)processor->R[instruction.rtype.rs1]) / ((sWord)processor->R[instruction.rtype.rs2]);
+                    } 
+                break;
+	        }
+            break;
+
 	case 0x5:
 	       switch(instruction.rtype.funct7) {
 	            case 0x0: //srl
-	            processor->R[instruction.rtype.rd] = (sWord)processor->R[instruction.rtype.rs1] >> (sWord)processor->R[instruction.rtype.rs2];
-	            break;
-	            case 0x5: //sra
-	            processor->R[instruction.rtype.rd] = (sWord)processor->R[instruction.rtype.rs1] >> (sWord)processor->R[instruction.rtype.rs2];
-	            break;
-	   }     
+	                processor->R[instruction.rtype.rd] = processor->R[instruction.rtype.rs1] >> processor->R[instruction.rtype.rs2];
+	                break;
+	            case 0x20: //sra
+	                processor->R[instruction.rtype.rd] = (sWord)processor->R[instruction.rtype.rs1] >> (sWord)processor->R[instruction.rtype.rs2];
+	                break;
+	        }
+            break;
+
 	case 0x6:
 	       switch(instruction.rtype.funct7) {      
 	            case 0x0: //or
-	            processor->R[instruction.rtype.rd] = (sWord)processor->R[instruction.rtype.rs1] | (sWord)processor->R[instruction.rtype.rs2];
-	            break;
-	            case 0x6: //rem
-	            processor->R[instruction.rtype.rd] = (sWord)processor->R[instruction.rtype.rs1] % (sWord)processor->R[instruction.rtype.rs2];
-	            break;
-	   }         
+	                processor->R[instruction.rtype.rd] = (sWord)processor->R[instruction.rtype.rs1] | (sWord)processor->R[instruction.rtype.rs2];
+	                break;
+	            case 0x1: //rem
+                    if((sWord)(processor->R[instruction.rtype.rs2] == 0)){
+                        processor->R[instruction.rtype.rd] = (sWord)processor->R[instruction.rtype.rs1];
+                    }
+                    else if ((sWord)processor->R[instruction.rtype.rs1] == 0x80000000 && (sWord)processor->R[instruction.rtype.rs2] == 0xffffffff){
+                        processor->R[instruction.rtype.rd] = 0;
+                    }
+                    else{
+                        processor->R[instruction.rtype.rd] = (sWord)processor->R[instruction.rtype.rs1] % (sWord)processor->R[instruction.rtype.rs2];
+                    } 
+                    break;
+	        }     
+            break;
+
 	case 0x7:
 	       switch(instruction.rtype.funct7) {       
-	            case 0x7: //and
+	            case 0x0: //and
 	            processor->R[instruction.rtype.rd] = (sWord)processor->R[instruction.rtype.rs1] & (sWord)processor->R[instruction.rtype.rs2];
 	            break;
-	    }
+	        }
+            break;
+
         default:
             handle_invalid_instruction(instruction);
             exit(-1);
             break;
     }
-    processor->PC += 4;
+
 }
 
 
 void execute_itype_except_load(Instruction instruction, Processor *processor) {
     switch(instruction.itype.funct3) {
         case 0x0: //addi
-            processor->R[instruction.itype.rd] = (sWord)processor->R[instruction.itype.rs1] + instruction.itype.imm;
+            processor->R[instruction.itype.rd] = (sWord)processor->R[instruction.itype.rs1] + bitExtender(instruction.itype.imm, 12);
             break;
         case 0x1: //slli
-            processor->R[instruction.itype.rd] = (sWord)processor->R[instruction.itype.rs1] << instruction.itype.imm;
+            processor->R[instruction.itype.rd] = (sWord)processor->R[instruction.itype.rs1] << bitExtender(instruction.itype.imm, 12);
             break;
         case 0x2: //slti
-            processor->R[instruction.itype.rd] = (((sWord)processor->R[instruction.itype.rs1] < instruction.itype.imm) ? 1 : 0);
+            processor->R[instruction.itype.rd] = (((sWord)processor->R[instruction.itype.rs1] < bitExtender(instruction.itype.imm, 12)) ? 1 : 0);
             break;
         case 0x4: //xori
-            processor->R[instruction.itype.rd] = (sWord)processor->R[instruction.itype.rs1] ^ instruction.itype.imm;
+            processor->R[instruction.itype.rd] = (sWord)processor->R[instruction.itype.rs1] ^ bitExtender(instruction.itype.imm, 12);
             break;          
         case 0x6: //ori
-            processor->R[instruction.itype.rd] = (sWord)processor->R[instruction.itype.rs1] | instruction.itype.imm;
+            processor->R[instruction.itype.rd] = (sWord)processor->R[instruction.itype.rs1] | bitExtender(instruction.itype.imm, 12);
             break;  
         case 0x7: //andi
-            processor->R[instruction.itype.rd] = (sWord)processor->R[instruction.itype.rs1] & instruction.itype.imm;
+            processor->R[instruction.itype.rd] = (sWord)processor->R[instruction.itype.rs1] & bitExtender(instruction.itype.imm, 12);
             break;  
         case 0x5: //srai - srli
             if (instruction.itype.imm >> 5 == 0b0100000){ 
-                processor->R[instruction.itype.rd] = (sWord)processor->R[instruction.itype.rs1] >> instruction.itype.imm; 
+                processor->R[instruction.itype.rd] = (sWord)processor->R[instruction.itype.rs1] >> bitExtender(instruction.itype.imm, 12); 
                 break;      
             }
-            processor->R[instruction.itype.rd] = (sWord)processor->R[instruction.itype.rs1] >> instruction.itype.imm;
+            processor->R[instruction.itype.rd] = processor->R[instruction.itype.rs1] >> bitExtender(instruction.itype.imm, 12);
             break;
         default:
             handle_invalid_instruction(instruction);
             exit(-1);
             break;
     }
-    processor->PC += 4;
+
 }
 
 void execute_ecall(Processor *processor, Byte *memory) {
     switch (processor->R[10]) { 
         case 1: 
             printf("%d", (int)processor->R[11]);
+            processor->PC += 4;
             break;
         case 10: 
             printf("exiting the simulator\n");
@@ -224,7 +263,6 @@ void execute_load(Instruction instruction, Processor *processor, Byte *memory) {
             break;
         default:
             handle_invalid_instruction(instruction);
-            exit(-1);
             break;
     }
 }
@@ -234,15 +272,12 @@ void execute_store(Instruction instruction, Processor *processor, Byte *memory) 
     switch(instruction.itype.funct3) {
         case 0x0: //sb
             store(memory, ((sWord)processor->R[instruction.stype.rs1]) + ((sWord)get_memory_offset(instruction)), LENGTH_BYTE , processor->R[instruction.stype.rs2], 0);
-            processor->PC += 4; 
             break;
         case 0x1: //sh
             store(memory, ((sWord)processor->R[instruction.stype.rs1]) + ((sWord)get_memory_offset(instruction)), LENGTH_HALF_WORD , processor->R[instruction.stype.rs2], 0);
-            processor->PC += 4; 
             break;
         case 0x2: //sw
             store(memory, ((sWord)processor->R[instruction.stype.rs1]) + ((sWord)get_memory_offset(instruction)), LENGTH_WORD , processor->R[instruction.stype.rs2], 0);
-            processor->PC += 4; 
             break;
         default:
             handle_invalid_instruction(instruction);
@@ -307,7 +342,6 @@ void store(Byte *memory, Address address, Alignment alignment, Word value, int c
             break;
         default:
             handle_invalid_write(address);
-            exit(-1);
             break;
     }
 }
@@ -322,23 +356,19 @@ Word load(Byte *memory, Address address, Alignment alignment, int check_align) {
     switch (alignment) {
         case LENGTH_BYTE:
             value = value | memory[address];
-		return value;
+		    return value;
             break;
         case LENGTH_HALF_WORD:
-             value = memory[address];    
-	     value = value | (memory[address+1] << 8);
-	     return value;
+            value = memory[address];    
+	        value = value | (memory[address+1] << 8);
+	        return value;
             break;
         case LENGTH_WORD:
-           value = memory[address];    
-	   value = value | (memory[address+1] << 8);
-	   value = value | (memory[address+2] << 16);
-	   value = value | (memory[address+3] << 24);
-	   return value;
-            break;
-        default:
-            handle_invalid_read(address);
-            exit(-1);
+            value = memory[address];    
+	        value = value | (memory[address+1] << 8);
+	        value = value | (memory[address+2] << 16);
+	        value = value | (memory[address+3] << 24);
+	        return value;
             break;
     }
     return value;

@@ -39,10 +39,10 @@ void decode_instruction(Instruction instruction) {
         case 0b1100011: // Branch
             write_branch(instruction);
             break;
-        case 0b0110111: // AUIPC
+        case 0b0010111: // AUIPC
             write_auipc(instruction);
             break;
-        case 0b0110110: // LUI
+        case 0b0110111: // LUI
             write_lui(instruction);
             break;
         case 0b1100111: // JALR
@@ -121,7 +121,7 @@ void write_rtype(Instruction instruction) {
 	           case 0x0:
 	            print_rtype("srl", instruction);
 	            break;
-	           case 0x1:
+	           case 0x20:
 	            print_rtype("sra", instruction);
 	            break;
               default:            
@@ -144,7 +144,7 @@ void write_rtype(Instruction instruction) {
        break;        
 	case 0x7:
 	       switch(instruction.rtype.funct7) {       
-	           case 0x7:
+	           case 0x0:
 	            print_rtype("and", instruction);
 	            break;
               default:            
@@ -152,7 +152,9 @@ void write_rtype(Instruction instruction) {
                 break;
 	    }
        break;       
-  
+    default:            
+            handle_invalid_instruction(instruction);
+            break;
    }
 }
 
@@ -178,10 +180,18 @@ void write_itype_except_load(Instruction instruction) {
             print_itype_except_load("andi", instruction, instruction.itype.imm);
             break;  
         case 0x5:
-	     if (instruction.itype.imm >> 5 == 0b0100000){        print_itype_except_load("srai",instruction,instruction.itype.imm & 31); 
-	     break;      }
-	      print_itype_except_load("srli",instruction,instruction.itype.imm & 31);
-	      break;  
+	     switch(instruction.itype.imm >> 5){  
+            case 0x20:     
+                print_itype_except_load("srai",instruction,instruction.itype.imm & 31); 
+	            break;      
+            case 0x0:
+	            print_itype_except_load("srli",instruction,instruction.itype.imm & 31);
+	            break;  
+          }
+            break;
+        default:            
+            handle_invalid_instruction(instruction);
+            break;
     }
 }
 
@@ -198,6 +208,9 @@ void write_load(Instruction instruction) {
         case 0x2:
             print_load("lw", instruction);
             break;
+        default:            
+            handle_invalid_instruction(instruction);
+            break;
     }
 }
 
@@ -212,7 +225,10 @@ void write_store(Instruction instruction) {
             print_store("sh", instruction);
             break;
         case 0x2:
-            print_store("sw ", instruction);
+            print_store("sw", instruction);
+            break;
+        default:
+            handle_invalid_instruction(instruction);
             break;
     }
 }
@@ -226,6 +242,9 @@ void write_branch(Instruction instruction) {
             break;
         case 0x1:
             print_branch("bne", instruction);
+            break;
+        default:            
+            handle_invalid_instruction(instruction);
             break;
     }
 }
@@ -253,7 +272,7 @@ void write_jalr(Instruction instruction) {
 
 void write_jal(Instruction instruction) {
   /* YOUR CODE HERE */
-    printf(JAL_FORMAT, instruction.jtype.rd, get_jump_distance(instruction));
+    printf(JAL_FORMAT, instruction.jtype.rd, bitExtender(get_jump_distance(instruction), 21));
 }
 
 
